@@ -35,6 +35,6 @@
   "homepage": "https://github.com/aheissenberger/data-graph-lib",
   "repository": {
     "type": "git",
-    "url": "https://github.com/aheissenberger/data-graph-lib.git"
+    "url": "git+https://github.com/aheissenberger/data-graph-lib.git"
   }
 }
