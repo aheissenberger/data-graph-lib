@@ -84,6 +84,7 @@ export class GraphQLService<Schemas> {
             return this.createPartial<T>(q.type as T, result as Schemas[T], selectedFieldsName);
         }
         if (Array.isArray(result)) {
+            // @ts-ignore
             return Promise.all(result.map(async (r) => this.applyResolversRecursive(r as Schemas[typeof q.type], q)));
         } else {
             return this.applyResolversRecursive(result as Schemas[typeof q.type], q) as Promise<Partial<Schemas[T]> | null>;
@@ -103,8 +104,10 @@ export class GraphQLService<Schemas> {
                         result[fieldName] = fieldValue;
                     }
                 }
+                // @ts-ignore
                 if (typeof q.fields[fieldName] === 'object' && typeof result[fieldName] !== 'undefined' && typeof result[fieldName] === 'object') {
                     const subFields = q.fields[fieldName];
+                    // @ts-ignore
                     if (Array.isArray(result[fieldName])) {
                         // @ts-ignore
                         for (let index = 0; index < result[fieldName].length; index++) {
