@@ -8,11 +8,9 @@
   "scripts": {
     "build": "rm -fr dist ; bun build --target=node ./src/lib.ts --outfile=dist/lib.js && bun run build:declaration",
     "build:declaration": "tsc --emitDeclarationOnly --project tsconfig.types.json; rm dist/*.test.d.ts",
-    "postbuild": "rimraf tsconfig.types.tsbuildinfo"
+    "postbuild": "rimraf tsconfig.types.tsbuildinfo",
+    "publish": "npm publish"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "zod": "^3.22.4"
   },
@@ -27,5 +25,16 @@
   "files": [
     "dist/*.js",
     "dist/*.d.ts"
-  ]
+  ],
+  "keywords": [
+    "data layer",
+    "graph"
+  ],
+  "author": "Andreas Heissenberger <andreas@heissenberger.at>",
+  "license": "bsd-2-clause",
+  "homepage": "https://github.com/aheissenberger/data-graph-lib",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aheissenberger/data-graph-lib.git"
+  }
 }
