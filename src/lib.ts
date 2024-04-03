@@ -93,12 +93,14 @@ export class GraphQLService<Schemas> {
 
     private async applyResolversRecursive(result: Schemas[typeof q.type], q: QueryType<Schemas>) {
         const selectedFieldsName = Object.keys(q.fields) as (keyof Schemas[typeof q.type])[];
+        // @ts-ignore
+        const type=q.type.startsWith('[')?q.type.slice(1,-1):q.type;
         for (const fieldName in q.fields) {
             if (!result?.hasOwnProperty(fieldName)) {
                 // @ts-ignore
-                if (this.resolvers[q.type] && this.resolvers[q.type][fieldName]) {
+                if (this.resolvers[type] && this.resolvers[type][fieldName]) {
                     // @ts-ignore
-                    const fieldValue = await this.resolvers[q.type][fieldName].resolver(result, q?.args);
+                    const fieldValue = await this.resolvers[type][fieldName].resolver(result, q?.args);
                     if (fieldValue) {
                         // @ts-ignore
                         result[fieldName] = fieldValue;
@@ -124,7 +126,7 @@ export class GraphQLService<Schemas> {
                 }
             }
         }
-        return this.createPartial(q.type, result, selectedFieldsName);
+        return this.createPartial(type, result, selectedFieldsName);
     };
 
     private createPartial<T extends keyof Schemas>(type: T, result: Schemas[T], selectedFieldsName: (keyof Schemas[T])[]) {
