@@ -1,0 +1,31 @@
+{
+  "name": "data-graph-lib",
+  "version": "0.0.1",
+  "description": "",
+  "type": "module",
+  "main": "dist/lib.js",
+  "types": "dist/lib.d.ts",
+  "scripts": {
+    "build": "rm -fr dist ; bun build --target=node ./src/lib.ts --outfile=dist/lib.js && bun run build:declaration",
+    "build:declaration": "tsc --emitDeclarationOnly --project tsconfig.types.json; rm dist/*.test.d.ts",
+    "postbuild": "rimraf tsconfig.types.tsbuildinfo"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "bun-types": "latest",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.2.2"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "files": [
+    "dist/*.js",
+    "dist/*.d.ts"
+  ]
+}
