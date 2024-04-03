@@ -53,6 +53,11 @@ const postComment = Zod.object({
             text: 'Comment 1',
             postId: '1',
         },
+        '2': {
+            id: '2',
+            text: 'Comment 1',
+            postId: '1',
+        }
     };
 
     function resolvePost(args: { id: string }): Zod.infer<typeof postType> | null {
@@ -77,6 +82,7 @@ const postComment = Zod.object({
             'title': true,
             'comments': {
                 type: 'comment',
+                manipulate: (comments)=>comments.filter(c=>c.id==='1'),
                 fields: {
                     id: true,
                     text: true,

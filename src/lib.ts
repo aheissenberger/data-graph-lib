@@ -1,11 +1,14 @@
 // Define generic interfaces for entities and queries
 
+export type UnwrapArray<T> = T extends Array<infer U> ? U : T;
+
 export type QueryType<S> = {
     [K in keyof S]: {
         type: K;
         args?: Record<string, unknown>;
+        manipulate?: (entity: S[K]) => S[K];
         fields: {
-            [I in keyof S[K]]?: boolean | QueryType<S>;
+            [I in keyof UnwrapArray<S[K]>]?: boolean | QueryType<S>;
         };
     }
 }[keyof S]
@@ -26,7 +29,7 @@ interface Query<S> {
 
 type resolverStoreItem<S, SK> = {
     type: keyof S;
-    resolver: (entity: SK, args?:any) => Promise<S[keyof S] | null> | S[keyof S] | null;
+    resolver: (entity: SK, args?: any) => Promise<S[keyof S] | null> | S[keyof S] | null;
 }
 type resolverStore<SS, SK extends string | number | symbol> = Record<SK, Record<keyof SK, resolverStoreItem<SS, SK>>>;
 
@@ -41,7 +44,7 @@ export class GraphQLService<Schemas> {
     }
 
     // Register a field-level resolver for an entity
-    registerResolver(entityName: keyof Schemas, fieldName: keyof [typeof entityName], type: keyof Schemas, resolver: (entity: [typeof entityName], args?:any) => Promise<Schemas[typeof type] | null> | Schemas[typeof type] | null) {
+    registerResolver(entityName: keyof Schemas, fieldName: keyof [typeof entityName], type: keyof Schemas, resolver: (entity: [typeof entityName], args?: any) => Promise<Schemas[typeof type] | null> | Schemas[typeof type] | null) {
         if (!this.resolvers[entityName]) {
             // @ts-ignore
             this.resolvers[entityName] = {
@@ -58,13 +61,20 @@ export class GraphQLService<Schemas> {
         };
     }
 
+    private async manipulateResult(result: any, q: QueryType<Schemas>) {
+        if (q.manipulate) {
+            return q.manipulate(await result);
+        }
+        return result;
+    }
+
     // Execute a query by name with provided arguments and selected fields
     async executeQuery<T extends keyof Schemas>(q: QueryType<Schemas>): Promise<Partial<Schemas[T]> | null> {
         const query = this.queries[q.type];
         if (!query) {
             throw new Error(`Query '${String(q.type)}' not found`);
         }
-        const result = await query.resolver(q.args)
+        const result = await this.manipulateResult(query.resolver(q.args),q);
 
         if (!result) {
             return null;
@@ -73,8 +83,11 @@ export class GraphQLService<Schemas> {
             const selectedFieldsName = Object.keys(result) as (keyof Schemas[T])[];
             return this.createPartial<T>(q.type as T, result as Schemas[T], selectedFieldsName);
         }
-
-        return this.applyResolversRecursive(result as Schemas[typeof q.type], q) as Promise<Partial<Schemas[T]> | null>;
+        if (Array.isArray(result)) {
+            return Promise.all(result.map(async (r) => this.applyResolversRecursive(r as Schemas[typeof q.type], q)));
+        } else {
+            return this.applyResolversRecursive(result as Schemas[typeof q.type], q) as Promise<Partial<Schemas[T]> | null>;
+        }
     }
 
     private async applyResolversRecursive(result: Schemas[typeof q.type], q: QueryType<Schemas>) {

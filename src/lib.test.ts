@@ -49,7 +49,7 @@ test("query", async () => {
 
     service.registerQuery('post', resolvePost)
     // @ts-ignore
-    service.registerResolver('post', 'comments', 'comment',resolvePostComments);
+    service.registerResolver('post', 'comments', 'comment', resolvePostComments);
 
     const query: QueryType<Schema> = {
         type: "post",
@@ -81,7 +81,76 @@ test("query", async () => {
     }
 
     const selectedPost = await service.executeQuery<'post'>(query);
-    console.log('selectedPost',selectedPost?.comments?.[0].text);
+    console.log('selectedPost', selectedPost?.comments?.[0].text);
+    // @ts-ignore
+    expect(selectedPost).toEqual(expected);
+})
+
+
+test("query2", async () => {
+
+
+    const postType = Zod.object({
+        id: Zod.string(),
+        title: Zod.string(),
+
+    });
+
+    const postsType = Zod.array(postType);
+
+    interface Schema {
+        post: Zod.infer<typeof postType>;
+        posts: Zod.infer<typeof postsType>;
+    }
+
+    const postData: Record<string, Zod.infer<typeof postType>> = {
+        '1': {
+            id: '1',
+            title: 'Post 1',
+        },
+        '2': {
+            id: '2',
+            title: 'Post 2',
+        }
+    };
+
+
+
+    function resolvePost(args: { id: string }): Zod.infer<typeof postType> | null {
+        return postData[args.id] || null;
+    }
+
+    function resolvePosts(): Zod.infer<typeof postType>[] | null {
+        return Object.values(postData) || null;
+    }
+
+    const service = new GraphQLService<Schema>();
+
+    service.registerQuery('post', resolvePost)
+    service.registerQuery('posts', resolvePosts)
+
+    const query: QueryType<Schema> = {
+        type: "posts",
+        manipulate: (posts: Zod.infer<typeof postsType>) => posts.filter(post => post.id === '1'),
+        fields:
+        {
+            'title': true,
+        }
+
+    };
+
+    const expected = [{
+        __type: "posts",
+        title: "Post 1"
+    },
+        // {
+        //     __type: "posts",
+        //     title: "Post 2"
+        // }
+    ]
+
+    const selectedPost = await service.executeQuery<'posts'>(query);
+    console.log('selectedPost', selectedPost);
     // @ts-ignore
     expect(selectedPost).toEqual(expected);
 })  
