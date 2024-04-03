@@ -82,7 +82,7 @@ const postComment = Zod.object({
             'title': true,
             'comments': {
                 type: 'comment',
-                manipulate: (comments)=>comments.filter(c=>c.id==='1'),
+                manipulate: (comments)=>comments.map(c=>c.text.toUpperCase()),
                 fields: {
                     id: true,
                     text: true,
