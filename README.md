@@ -20,6 +20,9 @@ npm install data-graph-lib
 
 
 ```js
+import { GraphQLService, QueryType } from "./lib";
+import Zod from "zod";
+
 const postComment = Zod.object({
         id: Zod.string(),
         text: Zod.string(),
