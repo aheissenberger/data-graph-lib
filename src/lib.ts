@@ -83,7 +83,8 @@ export class GraphQLService<Schemas> {
             const selectedFieldsName = Object.keys(result) as (keyof Schemas[T])[];
             return this.createPartial<T>(q.type as T, result as Schemas[T], selectedFieldsName);
         }
-        if (Array.isArray(result)) {
+        // @ts-ignore
+        if (q.type.startsWith('[')) {
             // @ts-ignore
             return Promise.all(result.map(async (r) => this.applyResolversRecursive(r as Schemas[typeof q.type], q)));
         } else {
